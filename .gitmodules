@@ -1,3 +1,4 @@
 [submodule "session_pdfs"]
 	path = session_pdfs
 	url = https://github.com/Kirol54/MinaNavigatorsS1-SessionNotes
+	 branch = main
