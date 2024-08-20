@@ -1,3 +1,6 @@
+/* eslint-disable no-useless-catch */
+//SOLUTION BASED ON https://github.com/t4top/mina-learn-to-earn/blob/main/challenge_1/src/secret_message_box.test.ts
+
 import {
   AccountUpdate,
   Bool,
@@ -51,7 +54,7 @@ describe('Challenge 1: Secret Message Box', () => {
 
     const tx = await Mina.transaction(admin, async () => {
       AccountUpdate.fundNewAccount(admin);
-      zkApp.deploy();
+      await zkApp.deploy();
     });
     await tx.prove();
     await tx.sign([zkAppPrivateKey, admin.key]).send();
@@ -93,7 +96,10 @@ describe('Challenge 1: Secret Message Box', () => {
     it(`should allow the administrator to store up to ${MAX_ADDRESS_COUNT} addresses`, async () => {
       // i starts from 2 because testAccounts[1] is already stored above
       for (let i = 2; i <= MAX_ADDRESS_COUNT; i++) {
-        await storeUserAddress({ sender: admin, user: testAccounts[i] });
+        await storeUserAddress({
+          sender: admin,
+          user: i > 9 ? Mina.TestPublicKey.random() : testAccounts[i],
+        });
       }
 
       const onChainMapRoot = zkApp.mapRoot.get();
@@ -147,7 +153,7 @@ describe('Challenge 1: Secret Message Box', () => {
     it('should confirm an event is emitted after successful message deposit', async () => {
       const events = await zkApp.fetchEvents();
       // assert.ok(events.length > 0);
-      expect(events).toBeGreaterThan(0);
+      expect(events.length).toBeGreaterThan(0);
       expect(events[0].type).toEqual('evtMessageReceived');
     });
 
@@ -217,7 +223,6 @@ describe('Challenge 1: Secret Message Box', () => {
       ).rejects.toThrow();
     });
   });
-
   const storeUserAddress = async ({
     sender,
     user,
@@ -225,17 +230,24 @@ describe('Challenge 1: Secret Message Box', () => {
     sender: Mina.TestPublicKey;
     user: Mina.TestPublicKey;
   }) => {
-    const userHash = Poseidon.hash(user.toFields());
+    try {
+      const userHash = Poseidon.hash(user.toFields());
 
-    const tx = await Mina.transaction(sender, async () => {
-      const witness = messageBoxMap.getWitness(userHash);
-      zkApp.storeAddress(user, witness);
-    });
-    await tx.prove();
-    await tx.sign([sender.key]).send();
+      // Create the transaction
+      const tx = await Mina.transaction(sender, async () => {
+        const witness = messageBoxMap.getWitness(userHash);
+        await zkApp.storeAddress(user, witness);
+      });
 
-    // update off-chain storage if the transaction is successful
-    messageBoxMap.set(userHash, DUMMY_MESSAGE);
+      // Prove and sign the transaction
+      await tx.prove();
+      await tx.sign([sender.key]).send();
+
+      // Update off-chain storage if the transaction is successful
+      messageBoxMap.set(userHash, DUMMY_MESSAGE);
+    } catch (error) {
+      throw error; // Re-throw the error to be caught by Jest in the test
+    }
   };
 
   const depositUserMessage = async ({
@@ -245,17 +257,24 @@ describe('Challenge 1: Secret Message Box', () => {
     sender: Mina.TestPublicKey;
     message: Field;
   }) => {
-    const userHash = Poseidon.hash(sender.toFields());
+    try {
+      const userHash = Poseidon.hash(sender.toFields());
 
-    const tx = await Mina.transaction(sender, async () => {
-      const witness = messageBoxMap.getWitness(userHash);
-      zkApp.depositMessage(message, witness);
-    });
-    await tx.prove();
-    await tx.sign([sender.key]).send();
+      // Create the transaction
+      const tx = await Mina.transaction(sender, async () => {
+        const witness = messageBoxMap.getWitness(userHash);
+        await zkApp.depositMessage(message, witness);
+      });
 
-    // update off-chain storage as well
-    messageBoxMap.set(userHash, message);
+      // Prove and sign the transaction
+      await tx.prove();
+      await tx.sign([sender.key]).send();
+
+      // Update off-chain storage as well
+      messageBoxMap.set(userHash, message);
+    } catch (error) {
+      throw error; // Re-throw the error to be caught by Jest in the test
+    }
   };
 
   function generateMessageFromFlags({

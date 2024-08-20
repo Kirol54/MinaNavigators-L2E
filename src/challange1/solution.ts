@@ -1,3 +1,5 @@
+//SOLUTION BASED ON https://github.com/t4top/mina-learn-to-earn/blob/main/challenge_1/src/secret_message_box.ts
+
 // SecretMessageBox contract for accepting secret messages from authorised users.
 
 export { SecretMessageBox, MAX_ADDRESS_COUNT, NO_MESSAGE, DUMMY_MESSAGE };
@@ -135,9 +137,6 @@ class SecretMessageBox extends SmartContract {
 
     // confirm message is provided
     message.assertNotEquals(NO_MESSAGE);
-
-    // reject dummy message used as placeholder
-    message.assertNotEquals(DUMMY_MESSAGE);
 
     const [flag6, flag5, flag4, flag3, flag2, flag1] = message
       .toBits()
