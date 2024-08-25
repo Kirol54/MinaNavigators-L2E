@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-//SOLUTION BASED ON https://github.com/t4top/mina-learn-to-earn/blob/main/challenge_1/src/secret_message_box.test.ts
+//SOLUTION BASED ON https://github.com/t4top/mina-learn-to-earn/tree/main/challenge_1
 
 import {
   AccountUpdate,

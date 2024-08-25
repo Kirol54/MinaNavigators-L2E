@@ -1,4 +1,4 @@
-//SOLUTION BASED ON https://github.com/t4top/mina-learn-to-earn/blob/main/challenge_1/src/secret_message_box.ts
+//SOLUTION BASED ON https://github.com/t4top/mina-learn-to-earn/tree/main/challenge_1
 
 // SecretMessageBox contract for accepting secret messages from authorised users.
 
